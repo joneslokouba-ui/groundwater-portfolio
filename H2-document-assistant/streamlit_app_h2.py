@@ -3,7 +3,14 @@ import glob
 import streamlit as st
 from pypdf import PdfReader
 
+import re
 from hydro_rag import build_retriever_from_texts, chunk_text, HybridRetriever
+
+
+def strip_markdown_headings(text: str) -> str:
+    """Remove leading #/## markdown heading markers so retrieved
+    passages render as plain prose rather than markdown syntax."""
+    return re.sub(r"^#{1,6}\s*", "", text, flags=re.MULTILINE)
 
 st.set_page_config(page_title="Hydrogeology Document Assistant", layout="wide")
 
@@ -24,7 +31,7 @@ def load_default_retriever():
     texts = []
     for path in sorted(glob.glob(os.path.join(CORPUS_DIR, "*.md"))):
         with open(path, "r", encoding="utf-8") as f:
-            texts.append((f.read(), os.path.basename(path)))
+            texts.append((strip_markdown_headings(f.read()), os.path.basename(path)))
     return build_retriever_from_texts(texts)
 
 
@@ -98,7 +105,7 @@ if query and retriever:
             c2.metric("Hybrid", f"{r['hybrid_score']:.3f}")
             c3.metric("Vector sim", f"{r['vector_sim']:.3f}")
             c4.metric("Keyword", f"{r['keyword_score']:.3f}")
-            st.write(r["chunk"].text)
+            st.text(r["chunk"].text)
 
     st.caption(
         "This tool returns and ranks the most relevant source passages "
