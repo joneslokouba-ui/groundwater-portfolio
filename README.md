@@ -1,56 +1,49 @@
-# Groundwater Modelling Portfolio
+# Groundwater Portfolio
 
-A structured, architecture-first portfolio for hydrogeology and groundwater modelling
-work — mirroring the same discipline used in the AI/ML engineering portfolio
-(ADR → model design → calibration → visualization → case study), adapted for
-hydrogeological modelling.
+A set of applied hydrogeology / groundwater modelling tools, built to
+demonstrate the translation of classical hydrogeology methods into
+interactive, deployable software — bridging a background in petroleum
+geology and groundwater hydrogeology consulting with modern AI/ML
+engineering practice.
 
-## Structure
+Each module follows an architecture-first process: an ADR (Architecture
+Decision Record) and Mermaid pipeline diagram are written before any code,
+the simulation core is validated against known analytical solutions or
+synthetic ground-truth data, and only then is the Streamlit dashboard
+built on top.
 
-- **00-adrs/** — Architecture/Approach Decision Records. One markdown file per project
-  documenting *why* a modelling approach, boundary condition, or software choice was made —
-  not just what the model shows. This is what makes the portfolio read as engineering
-  judgment, not just software output.
-- **01-conceptual-models/** — Conceptual hydrogeological models: geology, hydrostratigraphy,
-  recharge/discharge zones, before any numerical model is built.
-- **02-numerical-models/** — Actual model files and build notes, organized by platform:
-  - `feeflow/`
-  - `modflow/`
-  - `hydrogeosphere/`
-- **03-calibration-validation/** — Calibration reports, PEST runs, residual analysis,
-  sensitivity analysis, validation against observed heads/flows.
-- **04-visualization-dashboards/** — Streamlit (or similar) dashboards that make model
-  outputs interactive: head contours, drawdown over time, particle tracking, water
-  balance charts. This is the differentiator most groundwater modellers don't build —
-  worth featuring prominently.
-- **05-case-studies/** — Full narrative write-ups per project: problem, approach, result,
-  what a client or regulator needed to see. These are the pieces you'd actually link in
-  a resume or cover letter.
-- **06-reports-templates/** — Reusable report structures (calibration report template,
-  model documentation template) so each new project starts from a consistent format.
+## Modules
 
-## Mini Project #1: Aquifer Pumping Test Analysis (ready to deploy)
+| Module | Description | Status |
+|---|---|---|
+| [H1 — Aquifer Pumping Test Analysis](./H1-aquifer-pumping-test) | Theis analytical solution for transient well-test drawdown analysis | Deployed |
+| [H2 — Document Assistant](./H2-document-assistant) | Hybrid vector + keyword RAG assistant over remediation/geochemistry notes (α·VectorSim + (1−α)·KeywordScore) | In progress |
+| [H3 — Flow Field Engine](./H3-flow-field-engine) | Potentiometric surfaces, flow nets, and Darcy flux from interpolated well-head observations | Deployed |
+| [H4 — Contaminant Transport Simulator](./H4-contaminant-transport) | Particle-tracking advection-dispersion-retardation-decay simulation, riding H3's flow field | Deployed |
 
-A working Theis-solution pumping test analysis tool, following the
-same architecture-first pattern as the AI/ML portfolio:
+## Running locally
 
-- `00-adrs/001-theis-solution-vs-proprietary-software.md` — why analytical, not numerical, for this piece
-- `03-calibration-validation/theis_solution.py` — core solution + curve-fitting calibration (tested, recovers true T/S within ~1-5%)
-- `04-visualization-dashboards/streamlit_app.py` — interactive dashboard
-- `05-case-studies/case-study-01-pumping-test-analysis.md` — full write-up
+Each module is self-contained with its own `requirements.txt`:
 
-**To deploy on Streamlit Cloud (same pattern as Modules 1-8):**
-1. Move/copy `requirements.txt` to the repo root (Streamlit Cloud needs it there, per your established practice).
-2. Add `sim/__init__.py` if you restructure this into a `sim/` package, per your standing convention.
-3. Point Streamlit Cloud's entry file at `04-visualization-dashboards/streamlit_app.py`.
-4. Use all-hyphens in any new ADR filenames, per your standing convention.
+```bash
+cd H3-flow-field-engine
+pip install -r requirements.txt
+streamlit run streamlit_app_h3.py
+```
 
-Run locally first with: `streamlit run 04-visualization-dashboards/streamlit_app.py`
+## Deployment
 
-## Notes
+Each module is deployed independently to Streamlit Cloud. When configuring
+a deployment, point the app's **Advanced settings → Python dependencies
+file** at the module-specific `requirements.txt` (e.g.
+`H3-flow-field-engine/requirements.txt`), not a root-level file.
 
-- Populate each software-specific numerical-models folder only with what you have
-  genuine hands-on project history for — don't backfill software you haven't
-  actually used on a real project.
-- If a refresher is needed on any platform before publishing a case study, note that
-  honestly in the ADR rather than presenting rusty familiarity as current fluency.
+## Design notes
+
+- Every module's `docs/` folder contains an ADR stating the module's key
+  assumptions and known limitations explicitly, rather than leaving them
+  implicit.
+- Simulation cores are validated against synthetic data with known ground
+  truth before any dashboard code is written.
+- `sim/__init__.py` is present in every module to avoid Streamlit Cloud
+  import path issues.
