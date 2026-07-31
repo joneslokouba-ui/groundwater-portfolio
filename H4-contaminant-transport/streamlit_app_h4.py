@@ -28,6 +28,32 @@ st.caption(
 # ---------------------------------------------------------------------------
 # Sidebar
 # ---------------------------------------------------------------------------
+st.sidebar.header("Contaminant Scenario")
+contaminant_scenario = st.sidebar.selectbox(
+    "Scenario",
+    ["Generic Groundwater Contaminant", "Tailings Seepage (Mining)"],
+)
+
+SCENARIO_PRESETS = {
+    "Generic Groundwater Contaminant": {
+        "source_x": 100, "source_y": 500, "retardation": 1.0, "decay_rate": 0.0,
+        "note": "Conservative-to-mildly-retarded contaminant, e.g. a fuel spill.",
+    },
+    "Tailings Seepage (Mining)": {
+        "source_x": 150, "source_y": 500, "retardation": 4.0, "decay_rate": 0.0005,
+        "note": (
+            "Represents seepage of dissolved metals from a tailings storage "
+            "facility. Metals typically sorb strongly onto aquifer solids "
+            "(high retardation) and do not biodegrade — decay here "
+            "represents very slow attenuation processes (e.g. precipitation/"
+            "co-precipitation), not true degradation. Long-term monitoring "
+            "well networks are standard practice for this scenario."
+        ),
+    },
+}
+scenario_preset = SCENARIO_PRESETS[contaminant_scenario]
+st.sidebar.caption(scenario_preset["note"])
+
 st.sidebar.header("Flow Field")
 grad = st.sidebar.slider("Hydraulic gradient", 0.0001, 0.01, 0.001, 0.0001,
                           format="%.4f")
@@ -42,17 +68,22 @@ pumping_rate = st.sidebar.slider("Pumping rate (m3/day)", -500, 500, 200,
                                    disabled=not use_well)
 
 st.sidebar.header("Source")
-source_x = st.sidebar.slider("Source x", 0, 1000, 100)
-source_y = st.sidebar.slider("Source y", 0, 1000, 500)
+source_x = st.sidebar.slider("Source x", 0, 1000, scenario_preset["source_x"],
+                               key=f"source_x_{contaminant_scenario}")
+source_y = st.sidebar.slider("Source y", 0, 1000, scenario_preset["source_y"],
+                               key=f"source_y_{contaminant_scenario}")
 n_particles = st.sidebar.slider("Number of particles", 50, 500, 200, 50)
 
 st.sidebar.header("Transport Parameters")
 porosity = st.sidebar.slider("Porosity", 0.1, 0.5, 0.3, 0.01)
 alpha_l = st.sidebar.slider("Longitudinal dispersivity", 1.0, 50.0, 15.0, 1.0)
 alpha_t = st.sidebar.slider("Transverse dispersivity", 0.1, 10.0, 1.5, 0.1)
-retardation = st.sidebar.slider("Retardation factor R", 1.0, 10.0, 1.0, 0.1)
-decay_rate = st.sidebar.slider("Decay rate (per day)", 0.0, 0.02, 0.0, 0.001,
-                                 format="%.3f")
+retardation = st.sidebar.slider("Retardation factor R", 1.0, 10.0,
+                                  scenario_preset["retardation"], 0.1,
+                                  key=f"retardation_{contaminant_scenario}")
+decay_rate = st.sidebar.slider("Decay rate (per day)", 0.0, 0.02,
+                                 scenario_preset["decay_rate"], 0.0001,
+                                 format="%.4f", key=f"decay_{contaminant_scenario}")
 
 st.sidebar.header("Simulation")
 n_steps = st.sidebar.slider("Number of timesteps", 10, 200, 80, 10)
